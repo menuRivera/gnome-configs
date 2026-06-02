@@ -21,13 +21,19 @@ if [ -f config/extensions/manifest.json ]; then
 
             if [ "$compatible" = "true" ]; then
                 version_tag=$(echo "$api_json" | jq --arg v "$shell_version" '.shell_version_map[$v].pk')
-                encoded_uuid=$(echo "$uuid" | jq -sRr '@uri')
+                encoded_uuid=$(jq -rn --arg u "$uuid" '$u | @uri')
                 dl_url="https://extensions.gnome.org/download-extension/${encoded_uuid}.shell-extension.zip?version_tag=$version_tag"
-                curl -sL -o "/tmp/$uuid.zip" "$dl_url" && \
-                gnome-extensions install "/tmp/$uuid.zip" && \
-                rm -f "/tmp/$uuid.zip" && \
-                echo "  Installed" || \
-                echo "  Failed to install"
+                http_code=$(curl -sL -o "/tmp/$uuid.zip" -w "%{http_code}" "$dl_url")
+                if [ "$http_code" != "200" ]; then
+                    echo "  Download failed (HTTP $http_code)"
+                elif file "/tmp/$uuid.zip" | grep -q "Zip archive"; then
+                    gnome-extensions install "/tmp/$uuid.zip" >/dev/null 2>&1 && \
+                    echo "  Installed" || \
+                    echo "  Failed to install (gnome-extensions)"
+                else
+                    echo "  Downloaded file is not a valid archive"
+                fi
+                rm -f "/tmp/$uuid.zip"
             elif [ "$compatible" = "false" ]; then
                 echo "  Not compatible with GNOME Shell $shell_version. Skipping."
             else
