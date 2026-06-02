@@ -20,7 +20,8 @@ if [ -f config/extensions/manifest.json ]; then
                 '.shell_version_map | has($v)' 2>/dev/null)
 
             if [ "$compatible" = "true" ]; then
-                dl_url="https://extensions.gnome.org/download-extension/$uuid.shell-extension.zip?shell-version=$shell_version"
+                encoded_uuid=$(echo "$uuid" | jq -sRr '@uri')
+                dl_url="https://extensions.gnome.org/download-extension/${encoded_uuid}.shell-extension.zip?shell-version=$shell_version"
                 curl -sL -o "/tmp/$uuid.zip" "$dl_url" && \
                 gnome-extensions install "/tmp/$uuid.zip" && \
                 rm -f "/tmp/$uuid.zip" && \
