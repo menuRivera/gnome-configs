@@ -1,9 +1,11 @@
 #!/usr/bin/sh
 
+# load keyboard shortcuts
 dconf load /org/gnome/settings-daemon/plugins/media-keys/ < config/media_keys.ini
 dconf load /org/gnome/desktop/wm/keybindings/ < config/wm_shortcuts.ini
 dconf load /org/gnome/mutter/keybindings/ < config/mutter_shortcuts.ini
 
+# install and configure compatible extensions
 if [ -f config/extensions/manifest.json ]; then
     mkdir -p config/extensions
     shell_version=$(gnome-shell --version | sed 's/[^0-9]*\([0-9]*\).*/\1/')
@@ -54,4 +56,7 @@ if [ -f config/extensions/manifest.json ]; then
     done
 fi
 
+echo ""
 echo "Imported configurations!"
+echo ""
+echo "  Log out and back in (or Alt+F2 → r) for new extensions to load."
